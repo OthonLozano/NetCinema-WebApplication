@@ -1,0 +1,33 @@
+server:
+  port: 8080
+  servlet:
+    context-path: /api
+
+spring:
+  application:
+    name: NetCinema
+
+  #mongodbconfiguration
+  data:
+    mongodb:
+      uri: mongodb://localhost:27017/webcinema
+      database: webcinema
+      auto-index-creation: true
+
+  #jackson json
+  jackson:
+    serialization:
+      write-date-keys-as-timestamps: false
+    time-zone: America/Mexico_City
+    default-property-inclusion: non_null
+
+logging:
+  level:
+    root: INFO
+    com.netcinema: DEBUG
+    org.springframework.data.mongodb: DEBUG
+
+netcinema:
+  jwt:
+    secret: netcinema-secret-key-change-in-production-please-use-a-long-secure-key
+    expiration: 86400000 #24 hrs
