@@ -1,16 +1,20 @@
 package com.cine.cinema.controller;
 
+import com.cine.cinema.dto.ApiResponse;
 import com.cine.cinema.model.Pelicula;
 import com.cine.cinema.model.Sala;
 import com.cine.cinema.model.Usuario;
 import com.cine.cinema.service.PeliculaService;
 import com.cine.cinema.service.SalaService;
 import com.cine.cinema.service.UsuarioService;
+import com.cine.cinema.udp.NotificacionService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/test")
@@ -20,10 +24,11 @@ public class TestController {
     private final UsuarioService usuarioService;
     private final PeliculaService peliculaService;
     private final SalaService salaService;
+    private final NotificacionService notificacionService;
 
     @GetMapping("/hello")
     public String hello() {
-        return "¡Hola! NetCinema está funcionando correctamente 🎬";
+        return "¡Hola! NetCinema está funcionando correctamente";
     }
 
     @PostMapping("/crear-datos-prueba")
@@ -123,10 +128,20 @@ public class TestController {
     @DeleteMapping("/limpiar-bd")
     public String limpiarBD() {
         try {
-            // Aquí podrías implementar limpieza si lo necesitas
             return "Función de limpieza no implementada (por seguridad)";
         } catch (Exception e) {
             return "Error: " + e.getMessage();
         }
+    }
+
+    // Endpoint para ver clientes UDP conectados
+    @GetMapping("/udp/clientes")
+    public ResponseEntity<ApiResponse> obtenerClientesUDP() {
+        int clientes = notificacionService.getClientesConectados();
+        return ResponseEntity.ok(new ApiResponse(
+                true,
+                "Clientes UDP conectados",
+                Map.of("clientes", clientes)
+        ));
     }
 }

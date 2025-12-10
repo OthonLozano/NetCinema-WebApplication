@@ -6,6 +6,7 @@ import com.cine.cinema.model.Funcion;
 import com.cine.cinema.model.Reserva;
 import com.cine.cinema.model.Usuario;
 import com.cine.cinema.service.ReservaService;
+import com.cine.cinema.udp.NotificacionService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -22,19 +23,17 @@ import java.util.Map;
 public class ReservaController {
 
     private final ReservaService reservaService;
+    private final NotificacionService notificacionService; // NotificacionService
 
-    // Crear reserva
     @PostMapping
     public ResponseEntity<ApiResponse> crearReserva(@Valid @RequestBody ReservaDTO reservaDTO) {
         try {
             Reserva reserva = new Reserva();
 
-            // Crear referencia a función
             Funcion funcion = new Funcion();
             funcion.setId(reservaDTO.getFuncionId());
             reserva.setFuncion(funcion);
 
-            // Si hay usuario, crear referencia
             if (reservaDTO.getUsuarioId() != null && !reservaDTO.getUsuarioId().isEmpty()) {
                 Usuario usuario = new Usuario();
                 usuario.setId(reservaDTO.getUsuarioId());
@@ -46,6 +45,13 @@ public class ReservaController {
             reserva.setAsientos(reservaDTO.getAsientos());
 
             Reserva reservaCreada = reservaService.crearReserva(reserva);
+
+            // Enviar notificación UDP
+            notificacionService.notificarReservaCreada(
+                    reservaCreada.getId(),
+                    reservaCreada.getCodigoReserva()
+            );
+
             return ResponseEntity.status(HttpStatus.CREATED)
                     .body(new ApiResponse(true, "Reserva creada exitosamente", reservaCreada));
         } catch (Exception e) {
@@ -54,7 +60,6 @@ public class ReservaController {
         }
     }
 
-    // Confirmar reserva (después del pago)
     @PostMapping("/{id}/confirmar")
     public ResponseEntity<ApiResponse> confirmarReserva(
             @PathVariable String id,
@@ -62,6 +67,12 @@ public class ReservaController {
         try {
             String metodoPago = request.get("metodoPago");
             Reserva reservaConfirmada = reservaService.confirmarReserva(id, metodoPago);
+
+            // Enviar notificación UDP
+            notificacionService.notificarReservaConfirmada(
+                    reservaConfirmada.getId(),
+                    reservaConfirmada.getCodigoReserva()
+            );
 
             return ResponseEntity.ok(new ApiResponse(
                     true,
@@ -74,11 +85,19 @@ public class ReservaController {
         }
     }
 
-    // Cancelar reserva
     @PostMapping("/{id}/cancelar")
     public ResponseEntity<ApiResponse> cancelarReserva(@PathVariable String id) {
         try {
+            // Obtener código antes de cancelar
+            Reserva reserva = reservaService.obtenerPorId(id)
+                    .orElseThrow(() -> new RuntimeException("Reserva no encontrada"));
+            String codigoReserva = reserva.getCodigoReserva();
+
             reservaService.cancelarReserva(id);
+
+            // Enviar notificación UDP
+            notificacionService.notificarReservaCancelada(id, codigoReserva);
+
             return ResponseEntity.ok(new ApiResponse(true, "Reserva cancelada exitosamente"));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
@@ -86,7 +105,6 @@ public class ReservaController {
         }
     }
 
-    // Obtener todas las reservas
     @GetMapping
     public ResponseEntity<ApiResponse> obtenerTodas() {
         try {
@@ -98,7 +116,6 @@ public class ReservaController {
         }
     }
 
-    // Obtener reserva por ID
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse> obtenerPorId(@PathVariable String id) {
         try {
@@ -112,7 +129,6 @@ public class ReservaController {
         }
     }
 
-    // Obtener reserva por código
     @GetMapping("/codigo/{codigo}")
     public ResponseEntity<ApiResponse> obtenerPorCodigo(@PathVariable String codigo) {
         try {
@@ -126,7 +142,6 @@ public class ReservaController {
         }
     }
 
-    // Obtener reservas por usuario
     @GetMapping("/usuario/{usuarioId}")
     public ResponseEntity<ApiResponse> obtenerPorUsuario(@PathVariable String usuarioId) {
         try {
@@ -142,7 +157,6 @@ public class ReservaController {
         }
     }
 
-    // Obtener reservas por email
     @GetMapping("/email/{email}")
     public ResponseEntity<ApiResponse> obtenerPorEmail(@PathVariable String email) {
         try {
@@ -158,7 +172,6 @@ public class ReservaController {
         }
     }
 
-    // Obtener reservas por función
     @GetMapping("/funcion/{funcionId}")
     public ResponseEntity<ApiResponse> obtenerPorFuncion(@PathVariable String funcionId) {
         try {
@@ -174,7 +187,6 @@ public class ReservaController {
         }
     }
 
-    // Obtener reservas por estado
     @GetMapping("/estado/{estado}")
     public ResponseEntity<ApiResponse> obtenerPorEstado(@PathVariable String estado) {
         try {
@@ -190,7 +202,6 @@ public class ReservaController {
         }
     }
 
-    // Eliminar reserva
     @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponse> eliminarReserva(@PathVariable String id) {
         try {

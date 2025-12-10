@@ -6,6 +6,7 @@ import com.cine.cinema.model.Funcion;
 import com.cine.cinema.model.Pelicula;
 import com.cine.cinema.model.Sala;
 import com.cine.cinema.service.FuncionService;
+import com.cine.cinema.udp.NotificacionService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -22,6 +23,7 @@ import java.util.Map;
 public class FuncionController {
 
     private final FuncionService funcionService;
+    private final NotificacionService notificacionService; // NotificacionService
 
     // Crear función
     @PostMapping
@@ -29,7 +31,6 @@ public class FuncionController {
         try {
             Funcion funcion = new Funcion();
 
-            // Crear referencias a película y sala
             Pelicula pelicula = new Pelicula();
             pelicula.setId(funcionDTO.getPeliculaId());
             funcion.setPelicula(pelicula);
@@ -42,6 +43,13 @@ public class FuncionController {
             funcion.setPrecio(funcionDTO.getPrecio());
 
             Funcion funcionCreada = funcionService.crearFuncion(funcion);
+
+            // Enviar notificación UDP
+            notificacionService.notificarNuevaFuncion(
+                    funcionCreada.getId(),
+                    funcionCreada.getPelicula().getTitulo()
+            );
+
             return ResponseEntity.status(HttpStatus.CREATED)
                     .body(new ApiResponse(true, "Función creada exitosamente", funcionCreada));
         } catch (Exception e) {
@@ -50,7 +58,6 @@ public class FuncionController {
         }
     }
 
-    // Obtener todas las funciones
     @GetMapping
     public ResponseEntity<ApiResponse> obtenerTodas() {
         try {
@@ -62,7 +69,6 @@ public class FuncionController {
         }
     }
 
-    // Obtener funciones activas
     @GetMapping("/activas")
     public ResponseEntity<ApiResponse> obtenerActivas() {
         try {
@@ -74,7 +80,6 @@ public class FuncionController {
         }
     }
 
-    // Obtener funciones futuras
     @GetMapping("/futuras")
     public ResponseEntity<ApiResponse> obtenerFuturas() {
         try {
@@ -86,7 +91,6 @@ public class FuncionController {
         }
     }
 
-    // Obtener función por ID
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse> obtenerPorId(@PathVariable String id) {
         try {
@@ -100,7 +104,6 @@ public class FuncionController {
         }
     }
 
-    // Obtener funciones por película
     @GetMapping("/pelicula/{peliculaId}")
     public ResponseEntity<ApiResponse> obtenerPorPelicula(@PathVariable String peliculaId) {
         try {
@@ -116,7 +119,6 @@ public class FuncionController {
         }
     }
 
-    // Obtener funciones por sala
     @GetMapping("/sala/{salaId}")
     public ResponseEntity<ApiResponse> obtenerPorSala(@PathVariable String salaId) {
         try {
@@ -141,6 +143,9 @@ public class FuncionController {
             List<String> asientos = request.get("asientos");
             Funcion funcionActualizada = funcionService.bloquearAsientos(id, asientos);
 
+            // Enviar notificación UDP
+            notificacionService.notificarAsientosBloqueados(id, asientos);
+
             return ResponseEntity.ok(new ApiResponse(
                     true,
                     "Asientos bloqueados exitosamente",
@@ -161,6 +166,9 @@ public class FuncionController {
             List<String> asientos = request.get("asientos");
             Funcion funcionActualizada = funcionService.liberarAsientos(id, asientos);
 
+            // Enviar notificación UDP
+            notificacionService.notificarAsientosLiberados(id, asientos);
+
             return ResponseEntity.ok(new ApiResponse(
                     true,
                     "Asientos liberados exitosamente",
@@ -172,7 +180,6 @@ public class FuncionController {
         }
     }
 
-    // Actualizar función
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse> actualizarFuncion(
             @PathVariable String id,
@@ -203,7 +210,6 @@ public class FuncionController {
         }
     }
 
-    // Desactivar función
     @PatchMapping("/{id}/desactivar")
     public ResponseEntity<ApiResponse> desactivarFuncion(@PathVariable String id) {
         try {
@@ -215,7 +221,6 @@ public class FuncionController {
         }
     }
 
-    // Eliminar función permanentemente
     @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponse> eliminarFuncion(@PathVariable String id) {
         try {

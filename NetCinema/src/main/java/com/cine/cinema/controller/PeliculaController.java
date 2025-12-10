@@ -3,6 +3,7 @@ package com.cine.cinema.controller;
 import com.cine.cinema.dto.ApiResponse;
 import com.cine.cinema.model.Pelicula;
 import com.cine.cinema.service.PeliculaService;
+import com.cine.cinema.udp.NotificacionService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -18,12 +19,20 @@ import java.util.List;
 public class PeliculaController {
 
     private final PeliculaService peliculaService;
+    private final NotificacionService notificacionService;
 
     // Crear película
     @PostMapping
     public ResponseEntity<ApiResponse> crearPelicula(@Valid @RequestBody Pelicula pelicula) {
         try {
             Pelicula peliculaCreada = peliculaService.crearPelicula(pelicula);
+
+            // Enviar notificación UDP
+            notificacionService.notificarNuevaPelicula(
+                    peliculaCreada.getId(),
+                    peliculaCreada.getTitulo()
+            );
+
             return ResponseEntity.status(HttpStatus.CREATED)
                     .body(new ApiResponse(true, "Película creada exitosamente", peliculaCreada));
         } catch (Exception e) {
