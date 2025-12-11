@@ -15,7 +15,7 @@ function Asientos() {
 
     useEffect(() => {
         cargarFuncion();
-        const interval = setInterval(cargarFuncion, 5000); // Actualizar cada 5 segundos
+        const interval = setInterval(cargarFuncion, 1000); // Cambiar de 5000 a 1000 (cada segundo)
         return () => clearInterval(interval);
     }, [funcionId]);
 
@@ -23,7 +23,23 @@ function Asientos() {
         try {
             const response = await funcionService.getById(funcionId);
             if (response.success) {
-                setFuncion(response.data);
+                const funcionData = response.data;
+
+                // Limpiar bloqueos expirados en el cliente
+                if (funcionData.asientosBloqueados) {
+                    const ahora = Date.now();
+                    const bloqueosActivos = {};
+
+                    Object.entries(funcionData.asientosBloqueados).forEach(([asiento, expiracion]) => {
+                        if (expiracion > ahora) {
+                            bloqueosActivos[asiento] = expiracion;
+                        }
+                    });
+
+                    funcionData.asientosBloqueados = bloqueosActivos;
+                }
+
+                setFuncion(funcionData);
             }
         } catch (error) {
             console.error('Error al cargar función:', error);
@@ -78,33 +94,39 @@ function Asientos() {
         return funcion ? funcion.precio * asientosSeleccionados.length : 0;
     };
 
-    const handleContinuar = async () => {
+    const obtenerTiempoRestante = (asiento) => {
+        if (!funcion || !funcion.asientosBloqueados) return null;
+
+        const expiracion = funcion.asientosBloqueados[asiento.id];
+        if (!expiracion) return null;
+
+        const ahora = Date.now();
+        const tiempoRestante = expiracion - ahora;
+
+        if (tiempoRestante <= 0) return null;
+
+        const minutos = Math.floor(tiempoRestante / 60000);
+        const segundos = Math.floor((tiempoRestante % 60000) / 1000);
+
+        return `${minutos}:${segundos.toString().padStart(2, '0')}`;
+    };
+
+    const handleContinuar = () => {
         if (asientosSeleccionados.length === 0) {
             alert('Debes seleccionar al menos un asiento');
             return;
         }
 
-        setProcesando(true);
-
-        try {
-            // Bloquear asientos
-            await funcionService.bloquearAsientos(funcionId, asientosSeleccionados);
-
-            // Navegar a confirmación con los datos
-            navigate('/confirmar-reserva', {
-                state: {
-                    funcionId,
-                    asientos: asientosSeleccionados,
-                    total: calcularTotal(),
-                    funcion: funcion,
-                },
-            });
-        } catch (error) {
-            alert('Error al bloquear asientos. Intenta de nuevo.');
-            console.error(error);
-        } finally {
-            setProcesando(false);
-        }
+        // NO bloquear aquí, solo navegar con los datos
+        // El bloqueo se hará al crear la reserva
+        navigate('/confirmar-reserva', {
+            state: {
+                funcionId,
+                asientos: asientosSeleccionados,
+                total: calcularTotal(),
+                funcion: funcion,
+            },
+        });
     };
 
     if (loading) {
@@ -154,30 +176,37 @@ function Asientos() {
                     </div>
 
                     <div style={styles.asientosGrid}>
-                        {asientos.map((asiento) => (
-                            <div
-                                key={asiento.id}
-                                style={{
-                                    ...styles.asiento,
-                                    ...(asiento.ocupado && styles.asientoOcupado),
-                                    ...(asiento.bloqueado && styles.asientoBloqueado),
-                                    ...(asiento.seleccionado && styles.asientoSeleccionado),
-                                    ...(asiento.disponible && styles.asientoDisponible),
-                                }}
-                                onClick={() => toggleAsiento(asiento.id, asiento.disponible)}
-                                title={
-                                    asiento.ocupado
-                                        ? 'Ocupado'
-                                        : asiento.bloqueado
-                                            ? 'Bloqueado temporalmente'
-                                            : asiento.seleccionado
-                                                ? 'Seleccionado'
-                                                : 'Disponible'
-                                }
-                            >
-                                {asiento.id}
-                            </div>
-                        ))}
+                        {asientos.map((asiento) => {
+                            const tiempoRestante = obtenerTiempoRestante(asiento);
+
+                            return (
+                                <div
+                                    key={asiento.id}
+                                    style={{
+                                        ...styles.asiento,
+                                        ...(asiento.ocupado && styles.asientoOcupado),
+                                        ...(asiento.bloqueado && styles.asientoBloqueado),
+                                        ...(asiento.seleccionado && styles.asientoSeleccionado),
+                                        ...(asiento.disponible && styles.asientoDisponible),
+                                    }}
+                                    onClick={() => toggleAsiento(asiento.id, asiento.disponible)}
+                                    title={
+                                        asiento.ocupado
+                                            ? 'Ocupado'
+                                            : asiento.bloqueado
+                                                ? `Bloqueado - Expira en ${tiempoRestante || 'unos segundos'}`
+                                                : asiento.seleccionado
+                                                    ? 'Seleccionado'
+                                                    : 'Disponible'
+                                    }
+                                >
+                                    <div style={styles.asientoId}>{asiento.id}</div>
+                                    {asiento.bloqueado && tiempoRestante && (
+                                        <div style={styles.tiempoRestante}>{tiempoRestante}</div>
+                                    )}
+                                </div>
+                            );
+                        })}
                     </div>
 
                     <div style={styles.leyenda}>
@@ -457,6 +486,15 @@ const styles = {
         backgroundColor: '#dee2e6',
         color: '#adb5bd',
         cursor: 'not-allowed',
+    },
+    asientoId: {
+        fontSize: '12px',
+        fontWeight: '600',
+    },
+    tiempoRestante: {
+        fontSize: '9px',
+        marginTop: '2px',
+        opacity: 0.9,
     },
 };
 

@@ -17,34 +17,37 @@ import java.util.Optional;
 public class ReservaService {
 
     private final ReservaRepository reservaRepository;
-    private final FuncionRepository funcionRepository;
-    private final UsuarioRepository usuarioRepository;
+    private final FuncionRepository funcionRepository;  // ✅ Minúscula
+    private final UsuarioRepository usuarioRepository;  // ✅ Minúscula
     private final FuncionService funcionService;
 
     // Crear reserva
     public Reserva crearReserva(Reserva reserva) {
         // Verificar que la función existe
-        Funcion funcion = funcionRepository.findById(reserva.getFuncion().getId())
+        Funcion funcion = funcionRepository.findById(reserva.getFuncion().getId())  // ✅ minúscula
                 .orElseThrow(() -> new RuntimeException("Función no encontrada"));
 
         reserva.setFuncion(funcion);
 
         // Si hay usuario, cargarlo
         if (reserva.getUsuario() != null && reserva.getUsuario().getId() != null) {
-            Usuario usuario = usuarioRepository.findById(reserva.getUsuario().getId())
+            Usuario usuario = usuarioRepository.findById(reserva.getUsuario().getId())  // ✅ minúscula
                     .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
             reserva.setUsuario(usuario);
         }
 
+        // 🆕 PREPARAR RESERVA (genera código, fecha, estado)
+        reserva.prepararParaGuardar();
+
         // Bloquear asientos temporalmente
         funcionService.bloquearAsientos(funcion.getId(), reserva.getAsientos());
-
-        // Estado inicial: PENDIENTE
-        reserva.setEstado("PENDIENTE");
 
         // Calcular total
         double total = funcion.getPrecio() * reserva.getAsientos().size();
         reserva.setTotal(total);
+
+        // LOG PARA DEBUGGING
+        System.out.println("📝 Guardando reserva con código: " + reserva.getCodigoReserva());
 
         return reservaRepository.save(reserva);
     }
@@ -99,7 +102,7 @@ public class ReservaService {
 
     // Obtener reservas por usuario
     public List<Reserva> obtenerPorUsuario(String usuarioId) {
-        Usuario usuario = usuarioRepository.findById(usuarioId)
+        Usuario usuario = usuarioRepository.findById(usuarioId)  // ✅ minúscula
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
         return reservaRepository.findByUsuario(usuario);
@@ -112,7 +115,7 @@ public class ReservaService {
 
     // Obtener reservas por función
     public List<Reserva> obtenerPorFuncion(String funcionId) {
-        Funcion funcion = funcionRepository.findById(funcionId)
+        Funcion funcion = funcionRepository.findById(funcionId)  // ✅ minúscula
                 .orElseThrow(() -> new RuntimeException("Función no encontrada"));
 
         return reservaRepository.findByFuncion(funcion);

@@ -1,6 +1,5 @@
 package com.cine.cinema.model;
 
-import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
@@ -19,7 +18,6 @@ import java.util.UUID;
 
 @Data
 @NoArgsConstructor
-@AllArgsConstructor
 @Document(collection = "reservas")
 public class Reserva {
 
@@ -31,7 +29,7 @@ public class Reserva {
     private Funcion funcion;
 
     @DBRef
-    private Usuario usuario; // Puede ser null si es compra sin registro
+    private Usuario usuario;
 
     @NotBlank(message = "El nombre del cliente es obligatorio")
     private String nombreCliente;
@@ -41,22 +39,22 @@ public class Reserva {
     private String emailCliente;
 
     @NotEmpty(message = "Debe seleccionar al menos un asiento")
-    private List<String> asientos; // Ej: ["A1", "A2", "B5"]
+    private List<String> asientos;
 
     @Min(value = 1, message = "El total debe ser mayor a 0")
     private Double total;
 
     @NotBlank(message = "El estado es obligatorio")
-    private String estado; // PENDIENTE, CONFIRMADA, CANCELADA
+    private String estado = "PENDIENTE"; // Valor por defecto
 
     @Indexed(unique = true)
-    private String codigoReserva; // Código único para consultar
+    private String codigoReserva;
 
-    private LocalDateTime fechaCreacion = LocalDateTime.now();
+    private LocalDateTime fechaCreacion = LocalDateTime.now(); // Valor por defecto
 
-    private String metodoPago; // EFECTIVO, TARJETA, TRANSFERENCIA
+    private String metodoPago;
 
-    // Constructor para generar código automáticamente
+    // Constructor personalizado que genera el código automáticamente
     public Reserva(Funcion funcion, Usuario usuario, String nombreCliente,
                    String emailCliente, List<String> asientos, Double total) {
         this.funcion = funcion;
@@ -70,7 +68,21 @@ public class Reserva {
         this.fechaCreacion = LocalDateTime.now();
     }
 
-    private String generarCodigoReserva() {
+    // Método para generar código único
+    public static String generarCodigoReserva() {
         return "RES-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
+    }
+
+    // Método para asegurar que siempre haya un código antes de guardar
+    public void prepararParaGuardar() {
+        if (this.codigoReserva == null || this.codigoReserva.isEmpty()) {
+            this.codigoReserva = generarCodigoReserva();
+        }
+        if (this.fechaCreacion == null) {
+            this.fechaCreacion = LocalDateTime.now();
+        }
+        if (this.estado == null || this.estado.isEmpty()) {
+            this.estado = "PENDIENTE";
+        }
     }
 }
