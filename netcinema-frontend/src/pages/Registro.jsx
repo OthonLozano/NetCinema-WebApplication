@@ -12,7 +12,7 @@ function Registro() {
         nombre: '',
         apellido: '',
         telefono: '',
-        rol: 'CLIENTE', // Por defecto CLIENTE
+        rol: 'CLIENTE',
     });
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
@@ -232,19 +232,6 @@ function Registro() {
                                 required
                             />
                         </div>
-                    </div>
-
-                    <div style={styles.inputGroup}>
-                        <label style={styles.label}>Tipo de cuenta</label>
-                        <select
-                            name="rol"
-                            value={formData.rol}
-                            onChange={handleInputChange}
-                            style={styles.select}
-                        >
-                            <option value="CLIENTE">Cliente</option>
-                            <option value="ADMIN">Administrador</option>
-                        </select>
                     </div>
 
                     {error && (

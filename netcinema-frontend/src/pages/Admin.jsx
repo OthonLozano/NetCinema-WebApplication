@@ -46,7 +46,10 @@ function Admin() {
                         </p>
                     </div>
 
-                    <div style={styles.menuCard}>
+                    <div
+                        style={styles.menuCard}
+                        onClick={() => navigate('/admin/peliculas')} // 🆕 Agregar navegación
+                    >
                         <span style={styles.menuIcon}>🎥</span>
                         <h3 style={styles.menuTitle}>Gestionar Películas</h3>
                         <p style={styles.menuDescription}>
