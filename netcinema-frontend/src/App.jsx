@@ -14,6 +14,8 @@ import GestionFunciones from './pages/admin/GestionFunciones';
 import VerReservas from './pages/admin/VerReservas';
 import UDPNotifications from './components/UDPNotifications';
 import { authService } from './services/authService';
+import MisReservas from './pages/MisReservas'; // 🆕
+
 
 function App() {
     const user = authService.getUser();
@@ -34,6 +36,8 @@ function App() {
                 <Route path="/funciones/:peliculaId" element={<Funciones />} />
                 <Route path="/asientos/:funcionId" element={<Asientos />} />
                 <Route path="/confirmar-reserva" element={<ConfirmarReserva />} />
+                <Route path="/mis-reservas" element={<MisReservas />} /> {/* 🆕 */}
+
 
                 {/* Rutas de administración */}
                 <Route path="/admin" element={<Admin />} />

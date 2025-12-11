@@ -47,17 +47,14 @@ function Cartelera() {
     return (
         <div style={styles.container}>
             <header style={styles.header}>
-                <div style={styles.headerContent}>
-                    <h1 style={styles.title}> NetCinema</h1>
-                    <div style={styles.headerRight}>
-                        <span style={styles.userName}>
-                            {user?.nombre} {user?.apellido}
-                        </span>
-                        <button onClick={handleLogout} style={styles.logoutButton}>
-                            Cerrar Sesión
-                        </button>
-                    </div>
-
+                <h1 style={styles.title}>NetCinema - Cartelera</h1>
+                <div style={{ display: 'flex', gap: '12px' }}>
+                    <button onClick={() => navigate('/mis-reservas')} style={styles.reservasButton}>
+                        🎟️ Mis Reservas
+                    </button>
+                    <button onClick={handleLogout} style={styles.logoutButton}>
+                        Cerrar Sesión
+                    </button>
                 </div>
             </header>
 
@@ -304,6 +301,15 @@ const styles = {
     emptyText: {
         fontSize: '16px',
         color: '#6c757d',
+    },
+    reservasButton: {
+        padding: '10px 20px',
+        backgroundColor: '#667eea',
+        color: 'white',
+        border: 'none',
+        borderRadius: '8px',
+        cursor: 'pointer',
+        fontWeight: '600',
     },
 };
 

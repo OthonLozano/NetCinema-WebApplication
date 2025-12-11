@@ -21,6 +21,12 @@ export const reservaService = {
         return response.data;
     },
 
+    // Obtener reservas por usuario
+    getByUsuario: async (usuarioId) => {
+        const response = await api.get(`/reservas/usuario/${usuarioId}`);
+        return response.data;
+    },
+
     // Obtener todas las reservas
     getAll: async () => {
         const response = await api.get('/reservas');
