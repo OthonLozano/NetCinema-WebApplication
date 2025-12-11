@@ -40,4 +40,28 @@ export const funcionService = {
         });
         return response.data;
     },
+
+    // Obtener todas las funciones
+    getAll: async () => {
+        const response = await api.get('/funciones');
+        return response.data;
+    },
+
+    // Actualizar función
+    update: async (id, funcion) => {
+        const response = await api.put(`/funciones/${id}`, funcion);
+        return response.data;
+    },
+
+    // Desactivar función
+    desactivar: async (id) => {
+        const response = await api.patch(`/funciones/${id}/desactivar`);
+        return response.data;
+    },
+
+    // Eliminar función
+    delete: async (id) => {
+        const response = await api.delete(`/funciones/${id}`);
+        return response.data;
+    },
 };

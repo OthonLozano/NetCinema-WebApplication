@@ -18,6 +18,7 @@ function ConfirmarReserva() {
 
     const [procesando, setProcesando] = useState(false);
     const [reservaCreada, setReservaCreada] = useState(null);
+    const [error, setError] = useState('');
 
     if (!funcionId || !asientos || !funcion) {
         return (
@@ -39,14 +40,23 @@ function ConfirmarReserva() {
 
     const handleConfirmarReserva = async () => {
         if (!formData.nombreCliente || !formData.emailCliente) {
-            alert('Por favor completa todos los campos');
+            setError('Por favor completa todos los campos');
             return;
         }
 
         setProcesando(true);
+        setError('');
 
         try {
-            // Crear reserva
+            console.log('Creando reserva con datos:', {
+                funcionId,
+                usuarioId: user?.id,
+                nombreCliente: formData.nombreCliente,
+                emailCliente: formData.emailCliente,
+                asientos,
+            });
+
+            // 1. Crear reserva
             const reservaData = {
                 funcionId: funcionId,
                 usuarioId: user ? user.id : null,
@@ -56,23 +66,44 @@ function ConfirmarReserva() {
             };
 
             const reservaResponse = await reservaService.create(reservaData);
+            console.log('Respuesta crear reserva:', reservaResponse);
 
-            if (reservaResponse.success) {
-                const reserva = reservaResponse.data;
-
-                // Confirmar reserva con método de pago
-                const confirmarResponse = await reservaService.confirmar(
-                    reserva.id,
-                    formData.metodoPago
-                );
-
-                if (confirmarResponse.success) {
-                    setReservaCreada(confirmarResponse.data);
-                }
+            if (!reservaResponse.success) {
+                throw new Error(reservaResponse.message || 'Error al crear la reserva');
             }
+
+            const reserva = reservaResponse.data;
+
+            // 2. Confirmar reserva con método de pago
+            console.log('Confirmando reserva:', reserva.id);
+            const confirmarResponse = await reservaService.confirmar(
+                reserva.id,
+                formData.metodoPago
+            );
+            console.log('Respuesta confirmar:', confirmarResponse);
+
+            if (!confirmarResponse.success) {
+                throw new Error(confirmarResponse.message || 'Error al confirmar la reserva');
+            }
+
+            setReservaCreada(confirmarResponse.data);
+
         } catch (error) {
-            alert('Error al procesar la reserva. Por favor intenta de nuevo.');
-            console.error(error);
+            console.error('Error completo:', error);
+
+            let errorMessage = 'Error al procesar la reserva. Por favor intenta de nuevo.';
+
+            if (error.response) {
+                // Error de respuesta del servidor
+                errorMessage = error.response.data?.message ||
+                    `Error del servidor: ${error.response.status}`;
+            } else if (error.message) {
+                // Error personalizado
+                errorMessage = error.message;
+            }
+
+            setError(errorMessage);
+            alert(errorMessage);
         } finally {
             setProcesando(false);
         }
@@ -252,7 +283,14 @@ function ConfirmarReserva() {
                     <div style={styles.rightSection}>
                         <h2 style={styles.sectionTitle}>Datos del cliente</h2>
 
-                        <form style={styles.form}>
+                        {error && (
+                            <div style={styles.errorBox}>
+                                <span style={styles.errorIcon}>⚠️</span>
+                                <span>{error}</span>
+                            </div>
+                        )}
+
+                        <div style={styles.form}>
                             <div style={styles.formGroup}>
                                 <label style={styles.label}>Nombre completo *</label>
                                 <input
@@ -329,7 +367,7 @@ function ConfirmarReserva() {
                             >
                                 {procesando ? 'Procesando...' : 'Confirmar y pagar'}
                             </button>
-                        </form>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -391,6 +429,21 @@ const styles = {
         fontWeight: 'bold',
         color: '#2c3e50',
         marginBottom: '24px',
+    },
+    errorBox: {
+        backgroundColor: '#fee',
+        border: '1px solid #fcc',
+        padding: '12px 16px',
+        borderRadius: '8px',
+        marginBottom: '20px',
+        display: 'flex',
+        alignItems: 'center',
+        gap: '10px',
+        fontSize: '14px',
+        color: '#c62828',
+    },
+    errorIcon: {
+        fontSize: '18px',
     },
     movieInfo: {
         display: 'flex',

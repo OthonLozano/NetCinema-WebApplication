@@ -1,3 +1,4 @@
+// src/pages/Admin.jsx - ACTUALIZADO
 import { useNavigate } from 'react-router-dom';
 import { authService } from '../services/authService';
 
@@ -9,6 +10,51 @@ function Admin() {
         authService.logout();
         navigate('/');
     };
+
+    const menuItems = [
+        {
+            icon: '🎬',
+            title: 'Ver Cartelera',
+            description: 'Ver todas las películas disponibles',
+            path: '/cartelera',
+            color: '#667eea'
+        },
+        {
+            icon: '🎥',
+            title: 'Gestionar Películas',
+            description: 'Agregar, editar o eliminar películas',
+            path: '/admin/peliculas',
+            color: '#667eea'
+        },
+        {
+            icon: '🏛️',
+            title: 'Gestionar Salas',
+            description: 'Administrar salas de cine',
+            path: '/admin/salas',
+            color: '#667eea'
+        },
+        {
+            icon: '🎟️',
+            title: 'Gestionar Funciones',
+            description: 'Programar horarios de películas',
+            path: '/admin/funciones',
+            color: '#667eea'
+        },
+        {
+            icon: '📝',
+            title: 'Ver Reservas',
+            description: 'Consultar todas las reservas',
+            path: '/admin/reservas',
+            color: '#667eea'
+        },
+        {
+            icon: '🔍',
+            title: 'Consultar Reserva',
+            description: 'Buscar reserva por código',
+            path: '/consultar-reserva',
+            color: '#17a2b8'
+        }
+    ];
 
     return (
         <div style={styles.container}>
@@ -35,59 +81,20 @@ function Admin() {
                 </div>
 
                 <div style={styles.menuGrid}>
-                    <div
-                        style={styles.menuCard}
-                        onClick={() => navigate('/cartelera')}
-                    >
-                        <span style={styles.menuIcon}>🎬</span>
-                        <h3 style={styles.menuTitle}>Ver Cartelera</h3>
-                        <p style={styles.menuDescription}>
-                            Ver todas las películas disponibles
-                        </p>
-                    </div>
-
-                    <div
-                        style={styles.menuCard}
-                        onClick={() => navigate('/admin/peliculas')} // 🆕 Agregar navegación
-                    >
-                        <span style={styles.menuIcon}>🎥</span>
-                        <h3 style={styles.menuTitle}>Gestionar Películas</h3>
-                        <p style={styles.menuDescription}>
-                            Agregar, editar o eliminar películas
-                        </p>
-                    </div>
-
-                    <div style={styles.menuCard}>
-                        <span style={styles.menuIcon}>🏛️</span>
-                        <h3 style={styles.menuTitle}>Gestionar Salas</h3>
-                        <p style={styles.menuDescription}>
-                            Administrar salas de cine
-                        </p>
-                    </div>
-
-                    <div style={styles.menuCard}>
-                        <span style={styles.menuIcon}>🎟️</span>
-                        <h3 style={styles.menuTitle}>Gestionar Funciones</h3>
-                        <p style={styles.menuDescription}>
-                            Programar horarios de películas
-                        </p>
-                    </div>
-
-                    <div style={styles.menuCard}>
-                        <span style={styles.menuIcon}>📝</span>
-                        <h3 style={styles.menuTitle}>Ver Reservas</h3>
-                        <p style={styles.menuDescription}>
-                            Consultar todas las reservas
-                        </p>
-                    </div>
-
-                    <div style={styles.menuCard}>
-                        <span style={styles.menuIcon}>👥</span>
-                        <h3 style={styles.menuTitle}>Gestionar Usuarios</h3>
-                        <p style={styles.menuDescription}>
-                            Administrar usuarios del sistema
-                        </p>
-                    </div>
+                    {menuItems.map((item, index) => (
+                        <div
+                            key={index}
+                            style={{
+                                ...styles.menuCard,
+                                borderTop: `4px solid ${item.color}`
+                            }}
+                            onClick={() => navigate(item.path)}
+                        >
+                            <span style={styles.menuIcon}>{item.icon}</span>
+                            <h3 style={styles.menuTitle}>{item.title}</h3>
+                            <p style={styles.menuDescription}>{item.description}</p>
+                        </div>
+                    ))}
                 </div>
             </main>
         </div>

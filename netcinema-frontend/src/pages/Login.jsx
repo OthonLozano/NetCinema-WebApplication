@@ -116,6 +116,19 @@ function Login() {
                     >
                         Crear Cuenta Nueva
                     </button>
+                    <div style={styles.divider}>
+                        <span style={styles.dividerLine}></span>
+                        <span style={styles.dividerText}>o</span>
+                        <span style={styles.dividerLine}></span>
+                    </div>
+
+                    <button
+                        type="button"
+                        onClick={() => navigate('/consultar-reserva')}
+                        style={styles.consultarButton}
+                    >
+                        📋 Consultar mi reserva
+                    </button>
                 </form>
 
             </div>
@@ -311,6 +324,18 @@ const styles = {
         backgroundColor: 'white',
         color: '#667eea',
         border: '2px solid #667eea',
+        borderRadius: '10px',
+        fontSize: '15px',
+        fontWeight: '600',
+        cursor: 'pointer',
+        transition: 'all 0.3s ease',
+    },
+    consultarButton: {
+        width: '100%',
+        padding: '14px',
+        backgroundColor: 'white',
+        color: '#6c757d',
+        border: '2px solid #e9ecef',
         borderRadius: '10px',
         fontSize: '15px',
         fontWeight: '600',
