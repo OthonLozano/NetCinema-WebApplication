@@ -84,7 +84,6 @@ function ConsultarReserva() {
 
                         {error && (
                             <div style={styles.errorContainer}>
-                                <span>⚠️</span>
                                 <p style={styles.error}>{error}</p>
                             </div>
                         )}
@@ -160,12 +159,6 @@ function ConsultarReserva() {
                         </div>
 
                         <div style={styles.actions}>
-                            <button
-                                onClick={() => window.print()}
-                                style={styles.printButton}
-                            >
-                                🖨️ Imprimir
-                            </button>
                             <button
                                 onClick={() => {
                                     setReserva(null);

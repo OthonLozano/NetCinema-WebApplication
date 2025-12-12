@@ -186,21 +186,21 @@ function GestionFunciones() {
                                         onClick={() => abrirModalEditar(funcion)}
                                         style={styles.editButton}
                                     >
-                                        ✏️ Editar
+                                        Editar
                                     </button>
                                     {funcion.activa && (
                                         <button
                                             onClick={() => handleDesactivar(funcion.id)}
                                             style={styles.disableButton}
                                         >
-                                            🚫 Desactivar
+                                            Desactivar
                                         </button>
                                     )}
                                     <button
                                         onClick={() => handleEliminar(funcion.id)}
                                         style={styles.deleteButton}
                                     >
-                                        🗑️ Eliminar
+                                        Eliminar
                                     </button>
                                 </td>
                             </tr>

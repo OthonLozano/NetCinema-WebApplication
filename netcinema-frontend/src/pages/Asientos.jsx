@@ -116,9 +116,6 @@ function Asientos() {
             alert('Debes seleccionar al menos un asiento');
             return;
         }
-
-        // NO bloquear aquí, solo navegar con los datos
-        // El bloqueo se hará al crear la reserva
         navigate('/confirmar-reserva', {
             state: {
                 funcionId,
@@ -164,9 +161,9 @@ function Asientos() {
                 <div style={styles.infoCard}>
                     <h2 style={styles.peliculaTitulo}>{funcion.pelicula.titulo}</h2>
                     <div style={styles.funcionInfo}>
-                        <span>🏛️ {funcion.sala.nombre} ({funcion.sala.tipo})</span>
-                        <span>⏰ {new Date(funcion.fechaHora).toLocaleString('es-ES')}</span>
-                        <span>💵 ${funcion.precio.toFixed(2)} por asiento</span>
+                        <span>{funcion.sala.nombre} ({funcion.sala.tipo})</span>
+                        <span>{new Date(funcion.fechaHora).toLocaleString('es-ES')}</span>
+                        <span>${funcion.precio.toFixed(2)} por asiento</span>
                     </div>
                 </div>
 

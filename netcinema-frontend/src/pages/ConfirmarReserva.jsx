@@ -114,7 +114,6 @@ function ConfirmarReserva() {
         return (
             <div style={styles.container}>
                 <div style={styles.successCard}>
-                    <div style={styles.successIcon}>✅</div>
                     <h1 style={styles.successTitle}>¡Reserva Confirmada!</h1>
                     <p style={styles.successText}>
                         Tu reserva ha sido procesada exitosamente
@@ -177,12 +176,7 @@ function ConfirmarReserva() {
                         >
                             Volver a la cartelera
                         </button>
-                        <button
-                            onClick={() => window.print()}
-                            style={styles.secondaryButton}
-                        >
-                            Imprimir boleto
-                        </button>
+
                     </div>
                 </div>
             </div>
@@ -218,7 +212,7 @@ function ConfirmarReserva() {
 
                         <div style={styles.infoGrid}>
                             <div style={styles.infoItem}>
-                                <span style={styles.infoIcon}>🏛️</span>
+
                                 <div>
                                     <p style={styles.infoLabel}>Sala</p>
                                     <p style={styles.infoValue}>
@@ -228,7 +222,7 @@ function ConfirmarReserva() {
                             </div>
 
                             <div style={styles.infoItem}>
-                                <span style={styles.infoIcon}>📅</span>
+
                                 <div>
                                     <p style={styles.infoLabel}>Fecha</p>
                                     <p style={styles.infoValue}>
@@ -243,7 +237,7 @@ function ConfirmarReserva() {
                             </div>
 
                             <div style={styles.infoItem}>
-                                <span style={styles.infoIcon}>⏰</span>
+
                                 <div>
                                     <p style={styles.infoLabel}>Hora</p>
                                     <p style={styles.infoValue}>
@@ -256,7 +250,6 @@ function ConfirmarReserva() {
                             </div>
 
                             <div style={styles.infoItem}>
-                                <span style={styles.infoIcon}>🎟️</span>
                                 <div>
                                     <p style={styles.infoLabel}>Asientos</p>
                                     <p style={styles.infoValue}>{asientos.join(', ')}</p>
@@ -285,7 +278,7 @@ function ConfirmarReserva() {
 
                         {error && (
                             <div style={styles.errorBox}>
-                                <span style={styles.errorIcon}>⚠️</span>
+
                                 <span>{error}</span>
                             </div>
                         )}
@@ -337,7 +330,7 @@ function ConfirmarReserva() {
                             {formData.metodoPago === 'TARJETA' && (
                                 <div style={styles.paymentInfo}>
                                     <p style={styles.paymentNote}>
-                                        💳 Simulación de pago con tarjeta
+                                        Simulación de pago con tarjeta
                                     </p>
                                     <p style={styles.paymentText}>
                                         En un sistema real, aquí se integraría una pasarela de pago
@@ -348,7 +341,7 @@ function ConfirmarReserva() {
 
                             {formData.metodoPago === 'EFECTIVO' && (
                                 <div style={styles.paymentInfo}>
-                                    <p style={styles.paymentNote}>💵 Pago en taquilla</p>
+                                    <p style={styles.paymentNote}>Pago en taquilla</p>
                                     <p style={styles.paymentText}>
                                         Deberás presentar tu código de reserva y pagar en la taquilla
                                         del cine antes de la función.

@@ -6,7 +6,6 @@ import com.cine.cinema.model.Funcion;
 import com.cine.cinema.model.Reserva;
 import com.cine.cinema.model.Usuario;
 import com.cine.cinema.service.ReservaService;
-import com.cine.cinema.udp.NotificacionService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -23,7 +22,6 @@ import java.util.Map;
 public class ReservaController {
 
     private final ReservaService reservaService;
-    private final NotificacionService notificacionService; // NotificacionService
 
     @PostMapping
     public ResponseEntity<ApiResponse> crearReserva(@Valid @RequestBody ReservaDTO reservaDTO) {
@@ -46,12 +44,6 @@ public class ReservaController {
 
             Reserva reservaCreada = reservaService.crearReserva(reserva);
 
-            // Enviar notificación UDP
-            notificacionService.notificarReservaCreada(
-                    reservaCreada.getId(),
-                    reservaCreada.getCodigoReserva()
-            );
-
             return ResponseEntity.status(HttpStatus.CREATED)
                     .body(new ApiResponse(true, "Reserva creada exitosamente", reservaCreada));
         } catch (Exception e) {
@@ -68,11 +60,6 @@ public class ReservaController {
             String metodoPago = request.get("metodoPago");
             Reserva reservaConfirmada = reservaService.confirmarReserva(id, metodoPago);
 
-            // Enviar notificación UDP
-            notificacionService.notificarReservaConfirmada(
-                    reservaConfirmada.getId(),
-                    reservaConfirmada.getCodigoReserva()
-            );
 
             return ResponseEntity.ok(new ApiResponse(
                     true,
@@ -95,8 +82,6 @@ public class ReservaController {
 
             reservaService.cancelarReserva(id);
 
-            // Enviar notificación UDP
-            notificacionService.notificarReservaCancelada(id, codigoReserva);
 
             return ResponseEntity.ok(new ApiResponse(true, "Reserva cancelada exitosamente"));
         } catch (Exception e) {

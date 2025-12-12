@@ -14,6 +14,31 @@ function Funciones() {
         cargarDatos();
     }, [peliculaId]);
 
+    // Agrega esta función al principio de Funciones.jsx, después de los imports
+    const convertirYoutubeUrl = (url) => {
+        if (!url) return null;
+
+        // Si ya está en formato embed, retornarla tal cual
+        if (url.includes('youtube.com/embed/')) {
+            return url;
+        }
+
+        // Extraer el ID del video de diferentes formatos
+        let videoId = null;
+
+        // Formato: https://youtu.be/VIDEO_ID
+        if (url.includes('youtu.be/')) {
+            videoId = url.split('youtu.be/')[1].split('?')[0];
+        }
+        // Formato: https://www.youtube.com/watch?v=VIDEO_ID
+        else if (url.includes('youtube.com/watch')) {
+            const urlParams = new URLSearchParams(url.split('?')[1]);
+            videoId = urlParams.get('v');
+        }
+
+        // Retornar en formato embed
+        return videoId ? `https://www.youtube.com/embed/${videoId}` : null;
+    };
     const cargarDatos = async () => {
         try {
             // Cargar película
@@ -88,7 +113,16 @@ function Funciones() {
             <div style={styles.content}>
                 <div style={styles.peliculaInfo}>
                     <div style={styles.posterContainer}>
-                        <div style={styles.posterPlaceholder}>
+                        <img
+                            src={pelicula.posterUrl || 'https://via.placeholder.com/300x450/667eea/ffffff?text=' + pelicula.titulo.charAt(0)}
+                            alt={pelicula.titulo}
+                            style={styles.posterImage}
+                            onError={(e) => {
+                                e.target.style.display = 'none';
+                                e.target.nextSibling.style.display = 'flex';
+                            }}
+                        />
+                        <div style={{...styles.posterPlaceholder, display: 'none'}}>
                             {pelicula.titulo.charAt(0)}
                         </div>
                     </div>
@@ -99,7 +133,7 @@ function Funciones() {
                 {pelicula.clasificacion}
               </span>
                             <span style={styles.duracion}>
-                ⏱ {pelicula.duracion} min
+                {pelicula.duracion} min
               </span>
                         </div>
                         <div style={styles.generosContainer}>
@@ -122,6 +156,23 @@ function Funciones() {
                 </span>
                             </div>
                         </div>
+                        {pelicula.trailerUrl && (
+                            <div style={styles.trailerContainer}>
+                                <h3 style={styles.trailerTitle}>Tráiler</h3>
+                                <div style={styles.trailerWrapper}>
+                                    <iframe
+                                        width="100%"
+                                        height="400"
+                                        src={convertirYoutubeUrl(pelicula.trailerUrl)}  // ← Usa la función aquí
+                                        title={`Tráiler de ${pelicula.titulo}`}
+                                        frameBorder="0"
+                                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                        allowFullScreen
+                                        style={styles.trailerIframe}
+                                    />
+                                </div>
+                            </div>
+                        )}
                     </div>
                 </div>
 
@@ -132,7 +183,6 @@ function Funciones() {
 
                     {funciones.length === 0 ? (
                         <div style={styles.emptyState}>
-                            <span style={styles.emptyIcon}>📅</span>
                             <h3 style={styles.emptyTitle}>
                                 No hay funciones disponibles
                             </h3>
@@ -438,6 +488,38 @@ const styles = {
     emptyText: {
         fontSize: '16px',
         color: '#6c757d',
+    },
+    posterImage: {
+        width: '100%',
+        height: '100%',
+        objectFit: 'cover',
+    },
+    trailerContainer: {
+        marginTop: '30px',
+        paddingTop: '30px',
+        borderTop: '1px solid #e9ecef',
+    },
+    trailerTitle: {
+        fontSize: '24px',
+        fontWeight: 'bold',
+        color: '#2c3e50',
+        marginBottom: '20px',
+    },
+    trailerWrapper: {
+        position: 'relative',
+        paddingBottom: '56.25%', // Aspect ratio 16:9
+        height: 0,
+        overflow: 'hidden',
+        borderRadius: '12px',
+        backgroundColor: '#000',
+    },
+    trailerIframe: {
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        width: '100%',
+        height: '100%',
+        borderRadius: '12px',
     },
 };
 

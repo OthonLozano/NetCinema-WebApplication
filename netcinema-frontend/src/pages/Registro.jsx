@@ -236,7 +236,6 @@ function Registro() {
 
                     {error && (
                         <div style={styles.errorContainer}>
-                            <span style={styles.errorIcon}>⚠️</span>
                             <p style={styles.error}>{error}</p>
                         </div>
                     )}

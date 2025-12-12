@@ -119,35 +119,30 @@ function VerReservas() {
                 {/* Estadísticas */}
                 <div style={styles.statsGrid}>
                     <div style={styles.statCard}>
-                        <span style={styles.statIcon}>📊</span>
                         <div>
                             <h3 style={styles.statValue}>{estadisticas.total}</h3>
                             <p style={styles.statLabel}>Total Reservas</p>
                         </div>
                     </div>
                     <div style={{ ...styles.statCard, ...styles.statSuccess }}>
-                        <span style={styles.statIcon}>✅</span>
                         <div>
                             <h3 style={styles.statValue}>{estadisticas.confirmadas}</h3>
                             <p style={styles.statLabel}>Confirmadas</p>
                         </div>
                     </div>
                     <div style={{ ...styles.statCard, ...styles.statWarning }}>
-                        <span style={styles.statIcon}>⏳</span>
                         <div>
                             <h3 style={styles.statValue}>{estadisticas.pendientes}</h3>
                             <p style={styles.statLabel}>Pendientes</p>
                         </div>
                     </div>
                     <div style={{ ...styles.statCard, ...styles.statDanger }}>
-                        <span style={styles.statIcon}>❌</span>
                         <div>
                             <h3 style={styles.statValue}>{estadisticas.canceladas}</h3>
                             <p style={styles.statLabel}>Canceladas</p>
                         </div>
                     </div>
                     <div style={{ ...styles.statCard, ...styles.statPrimary }}>
-                        <span style={styles.statIcon}>💰</span>
                         <div>
                             <h3 style={styles.statValue}>${estadisticas.ingresoTotal.toFixed(2)}</h3>
                             <p style={styles.statLabel}>Ingresos Totales</p>
@@ -230,14 +225,14 @@ function VerReservas() {
                                         onClick={() => verDetalle(reserva)}
                                         style={styles.viewButton}
                                     >
-                                        👁️ Ver
+                                        Ver
                                     </button>
                                     {reserva.estado !== 'CANCELADA' && (
                                         <button
                                             onClick={() => handleCancelarReserva(reserva.id)}
                                             style={styles.cancelButton}
                                         >
-                                            ❌ Cancelar
+                                            Cancelar
                                         </button>
                                     )}
                                 </td>

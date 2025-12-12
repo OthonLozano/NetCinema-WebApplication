@@ -182,21 +182,21 @@ function GestionSalas() {
                                         onClick={() => abrirModalEditar(sala)}
                                         style={styles.editButton}
                                     >
-                                        ✏️ Editar
+                                        Editar
                                     </button>
                                     {sala.activa && (
                                         <button
                                             onClick={() => handleDesactivar(sala.id)}
                                             style={styles.disableButton}
                                         >
-                                            🚫 Desactivar
+                                            Desactivar
                                         </button>
                                     )}
                                     <button
                                         onClick={() => handleEliminar(sala.id)}
                                         style={styles.deleteButton}
                                     >
-                                        🗑️ Eliminar
+                                        Eliminar
                                     </button>
                                 </td>
                             </tr>

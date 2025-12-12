@@ -6,7 +6,6 @@ import com.cine.cinema.model.Funcion;
 import com.cine.cinema.model.Pelicula;
 import com.cine.cinema.model.Sala;
 import com.cine.cinema.service.FuncionService;
-import com.cine.cinema.udp.NotificacionService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -23,7 +22,6 @@ import java.util.Map;
 public class FuncionController {
 
     private final FuncionService funcionService;
-    private final NotificacionService notificacionService; // NotificacionService
 
     // Crear función
     @PostMapping
@@ -44,11 +42,6 @@ public class FuncionController {
 
             Funcion funcionCreada = funcionService.crearFuncion(funcion);
 
-            // Enviar notificación UDP
-            notificacionService.notificarNuevaFuncion(
-                    funcionCreada.getId(),
-                    funcionCreada.getPelicula().getTitulo()
-            );
 
             return ResponseEntity.status(HttpStatus.CREATED)
                     .body(new ApiResponse(true, "Función creada exitosamente", funcionCreada));
@@ -143,9 +136,6 @@ public class FuncionController {
             List<String> asientos = request.get("asientos");
             Funcion funcionActualizada = funcionService.bloquearAsientos(id, asientos);
 
-            // Enviar notificación UDP
-            notificacionService.notificarAsientosBloqueados(id, asientos);
-
             return ResponseEntity.ok(new ApiResponse(
                     true,
                     "Asientos bloqueados exitosamente",
@@ -165,9 +155,6 @@ public class FuncionController {
         try {
             List<String> asientos = request.get("asientos");
             Funcion funcionActualizada = funcionService.liberarAsientos(id, asientos);
-
-            // Enviar notificación UDP
-            notificacionService.notificarAsientosLiberados(id, asientos);
 
             return ResponseEntity.ok(new ApiResponse(
                     true,

@@ -13,42 +13,36 @@ function Admin() {
 
     const menuItems = [
         {
-            icon: '🎬',
             title: 'Ver Cartelera',
             description: 'Ver todas las películas disponibles',
             path: '/cartelera',
             color: '#667eea'
         },
         {
-            icon: '🎥',
             title: 'Gestionar Películas',
             description: 'Agregar, editar o eliminar películas',
             path: '/admin/peliculas',
             color: '#667eea'
         },
         {
-            icon: '🏛️',
             title: 'Gestionar Salas',
             description: 'Administrar salas de cine',
             path: '/admin/salas',
             color: '#667eea'
         },
         {
-            icon: '🎟️',
             title: 'Gestionar Funciones',
             description: 'Programar horarios de películas',
             path: '/admin/funciones',
             color: '#667eea'
         },
         {
-            icon: '📝',
             title: 'Ver Reservas',
             description: 'Consultar todas las reservas',
             path: '/admin/reservas',
             color: '#667eea'
         },
         {
-            icon: '🔍',
             title: 'Consultar Reserva',
             description: 'Buscar reserva por código',
             path: '/consultar-reserva',

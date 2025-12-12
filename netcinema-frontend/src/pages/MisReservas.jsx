@@ -161,7 +161,6 @@ function MisReservas() {
                 {/* Lista de reservas */}
                 {reservasFiltradas().length === 0 ? (
                     <div style={styles.emptyState}>
-                        <span style={styles.emptyIcon}>🎟️</span>
                         <h3 style={styles.emptyTitle}>No tienes reservas</h3>
                         <p style={styles.emptyText}>
                             {filtro === 'TODAS'
@@ -202,25 +201,21 @@ function MisReservas() {
 
                                     <div style={styles.reservaInfo}>
                                         <div style={styles.infoRow}>
-                                            <span style={styles.infoIcon}>📅</span>
                                             <span style={styles.infoText}>
                         {formatearFecha(reserva.funcion.fechaHora)}
                       </span>
                                         </div>
                                         <div style={styles.infoRow}>
-                                            <span style={styles.infoIcon}>🏛️</span>
                                             <span style={styles.infoText}>
                         {reserva.funcion.sala.nombre} ({reserva.funcion.sala.tipo})
                       </span>
                                         </div>
                                         <div style={styles.infoRow}>
-                                            <span style={styles.infoIcon}>🪑</span>
                                             <span style={styles.infoText}>
                         Asientos: {reserva.asientos.join(', ')}
                       </span>
                                         </div>
                                         <div style={styles.infoRow}>
-                                            <span style={styles.infoIcon}>💵</span>
                                             <span style={styles.infoText}>
                         Total: ${reserva.total.toFixed(2)}
                       </span>
@@ -283,7 +278,7 @@ function MisReservas() {
 
                             {/* Información de la película */}
                             <div style={styles.detalleSection}>
-                                <h4 style={styles.sectionTitle}>📽️ Película</h4>
+                                <h4 style={styles.sectionTitle}>Película</h4>
                                 <div style={styles.detalleRow}>
                                     <span style={styles.detalleLabel}>Título:</span>
                                     <span style={styles.detalleValor}>
@@ -306,7 +301,7 @@ function MisReservas() {
 
                             {/* Información de la función */}
                             <div style={styles.detalleSection}>
-                                <h4 style={styles.sectionTitle}>🎬 Función</h4>
+                                <h4 style={styles.sectionTitle}>Función</h4>
                                 <div style={styles.detalleRow}>
                                     <span style={styles.detalleLabel}>Fecha y Hora:</span>
                                     <span style={styles.detalleValor}>
@@ -330,7 +325,7 @@ function MisReservas() {
 
                             {/* Información del cliente */}
                             <div style={styles.detalleSection}>
-                                <h4 style={styles.sectionTitle}>👤 Cliente</h4>
+                                <h4 style={styles.sectionTitle}>Cliente</h4>
                                 <div style={styles.detalleRow}>
                                     <span style={styles.detalleLabel}>Nombre:</span>
                                     <span style={styles.detalleValor}>
@@ -347,7 +342,7 @@ function MisReservas() {
 
                             {/* Información de pago */}
                             <div style={styles.detalleSection}>
-                                <h4 style={styles.sectionTitle}>💳 Pago</h4>
+                                <h4 style={styles.sectionTitle}>Pago</h4>
                                 <div style={styles.detalleRow}>
                                     <span style={styles.detalleLabel}>Método de pago:</span>
                                     <span style={styles.detalleValor}>
@@ -378,9 +373,6 @@ function MisReservas() {
                                         Cancelar Reserva
                                     </button>
                                 )}
-                                <button onClick={() => window.print()} style={styles.imprimirButton}>
-                                    🖨️ Imprimir
-                                </button>
                                 <button onClick={cerrarModal} style={styles.cerrarButton}>
                                     Cerrar
                                 </button>

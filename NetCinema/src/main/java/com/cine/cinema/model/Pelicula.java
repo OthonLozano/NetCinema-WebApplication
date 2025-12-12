@@ -42,6 +42,7 @@ public class Pelicula {
     private List<String> actores;
 
     private String posterUrl; // URL del póster
+    private String trailerUrl; // URL del trailer
 
     private Boolean activa = true;
 }

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { peliculaService } from '../services/peliculaService';
 import { authService } from '../services/authService';
+import websocketManager from "../services/websocket.js";
 
 function Cartelera() {
     const [peliculas, setPeliculas] = useState([]);
@@ -28,6 +29,7 @@ function Cartelera() {
 
     const handleLogout = () => {
         authService.logout();
+        websocketManager.disconnect();
         navigate('/');
     };
 
@@ -50,7 +52,7 @@ function Cartelera() {
                 <h1 style={styles.title}>NetCinema - Cartelera</h1>
                 <div style={{ display: 'flex', gap: '12px' }}>
                     <button onClick={() => navigate('/mis-reservas')} style={styles.reservasButton}>
-                        🎟️ Mis Reservas
+                        Mis Reservas
                     </button>
                     <button onClick={handleLogout} style={styles.logoutButton}>
                         Cerrar Sesión
@@ -79,7 +81,16 @@ function Cartelera() {
                         {peliculas.map((pelicula) => (
                             <div key={pelicula.id} style={styles.card}>
                                 <div style={styles.posterContainer}>
-                                    <div style={styles.posterPlaceholder}>
+                                    <img
+                                        src={pelicula.posterUrl || 'https://via.placeholder.com/280x380/667eea/ffffff?text=' + pelicula.titulo.charAt(0)}
+                                        alt={pelicula.titulo}
+                                        style={styles.posterImage}
+                                        onError={(e) => {
+                                            e.target.style.display = 'none';
+                                            e.target.nextSibling.style.display = 'flex';
+                                        }}
+                                    />
+                                    <div style={{...styles.posterPlaceholder, display: 'none'}}>
                                         {pelicula.titulo.charAt(0)}
                                     </div>
                                     <div style={styles.clasificacionBadge}>
@@ -88,7 +99,7 @@ function Cartelera() {
                                 </div>
                                 <div style={styles.cardContent}>
                                     <h3 style={styles.peliculaTitulo}>{pelicula.titulo}</h3>
-                                    <p style={styles.duracion}>⏱ {pelicula.duracion} minutos</p>
+                                    <p style={styles.duracion}>{pelicula.duracion} minutos</p>
                                     <div style={styles.generosContainer}>
                                         {pelicula.generos.slice(0, 3).map((genero, index) => (
                                             <span key={index} style={styles.generoTag}>
@@ -310,6 +321,11 @@ const styles = {
         borderRadius: '8px',
         cursor: 'pointer',
         fontWeight: '600',
+    },
+    posterImage: {
+        width: '100%',
+        height: '100%',
+        objectFit: 'cover',
     },
 };
 

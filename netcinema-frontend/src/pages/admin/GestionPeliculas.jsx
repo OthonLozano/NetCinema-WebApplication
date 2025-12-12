@@ -18,6 +18,7 @@ function GestionPeliculas() {
         director: '',
         actores: '',
         posterUrl: '',
+        trailerUrl: '',
         activa: true,
     });
 
@@ -58,6 +59,7 @@ function GestionPeliculas() {
             director: '',
             actores: '',
             posterUrl: '',
+            trailerUrl: '',
             activa: true,
         });
         setMostrarModal(true);
@@ -75,6 +77,7 @@ function GestionPeliculas() {
             director: pelicula.director,
             actores: pelicula.actores.join(', '),
             posterUrl: pelicula.posterUrl || '',
+            trailerUrl: pelicula.trailerUrl || '',
             activa: pelicula.activa,
         });
         setMostrarModal(true);
@@ -97,6 +100,7 @@ function GestionPeliculas() {
             director: formData.director,
             actores: formData.actores.split(',').map((a) => a.trim()),
             posterUrl: formData.posterUrl,
+            trailerUrl: formData.trailerUrl,
             activa: formData.activa,
         };
 
@@ -186,13 +190,13 @@ function GestionPeliculas() {
                                         onClick={() => abrirModalEditar(pelicula)}
                                         style={styles.editButton}
                                     >
-                                        ✏️ Editar
+                                        Editar
                                     </button>
                                     <button
                                         onClick={() => handleEliminar(pelicula.id)}
                                         style={styles.deleteButton}
                                     >
-                                        🗑️ Eliminar
+                                        Eliminar
                                     </button>
                                 </td>
                             </tr>
@@ -315,6 +319,27 @@ function GestionPeliculas() {
                                     style={styles.input}
                                     placeholder="https://..."
                                 />
+                                {formData.posterUrl && (
+                                    <small style={styles.helper}>
+                                        Vista previa disponible al guardar
+                                    </small>
+                                )}
+                            </div>
+
+
+                            <div style={styles.formGroup}>
+                                <label style={styles.label}>URL del Tráiler (YouTube)</label>
+                                <input
+                                    type="text"
+                                    name="trailerUrl"
+                                    value={formData.trailerUrl}
+                                    onChange={handleInputChange}
+                                    style={styles.input}
+                                    placeholder="https://youtu.be/... o https://www.youtube.com/watch?v=..."
+                                />
+                                <small style={styles.helper}>
+                                    Puedes pegar cualquier URL de YouTube
+                                </small>
                             </div>
 
                             <div style={styles.checkboxGroup}>
@@ -499,6 +524,11 @@ const styles = {
         borderRadius: '6px',
         fontSize: '14px',
         outline: 'none',
+    },
+    helper: { // 🆕 Estilo para texto de ayuda
+        fontSize: '12px',
+        color: '#6c757d',
+        marginTop: '4px',
     },
     checkboxGroup: {
         display: 'flex',

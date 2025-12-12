@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { authService } from '../services/authService';
+import websocketManager from '../services/websocket';
 
 function Login() {
     const [username, setUsername] = useState('');
@@ -19,7 +20,7 @@ function Login() {
 
             if (response.success) {
                 authService.setUser(response.data);
-
+                websocketManager.connect(response.data.userId);
                 if (response.data.rol === 'ADMIN') {
                     navigate('/admin');
                 } else {
@@ -127,7 +128,7 @@ function Login() {
                         onClick={() => navigate('/consultar-reserva')}
                         style={styles.consultarButton}
                     >
-                        📋 Consultar mi reserva
+                        Consultar mi reserva
                     </button>
                 </form>
 

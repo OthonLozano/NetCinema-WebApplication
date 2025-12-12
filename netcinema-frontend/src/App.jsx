@@ -12,7 +12,6 @@ import GestionPeliculas from './pages/admin/GestionPeliculas';
 import GestionSalas from './pages/admin/GestionSalas';
 import GestionFunciones from './pages/admin/GestionFunciones';
 import VerReservas from './pages/admin/VerReservas';
-import UDPNotifications from './components/UDPNotifications';
 import { authService } from './services/authService';
 import MisReservas from './pages/MisReservas'; // 🆕
 
@@ -22,8 +21,7 @@ function App() {
 
     return (
         <Router>
-            {/* Sistema de notificaciones UDP (solo para admin) */}
-            {user && <UDPNotifications usuarioRol={user.rol} />}
+
 
             <Routes>
                 {/* Rutas públicas */}
