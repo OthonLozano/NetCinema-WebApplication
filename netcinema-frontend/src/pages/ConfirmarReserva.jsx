@@ -2,6 +2,9 @@ import { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { reservaService } from '../services/reservaService';
 import { authService } from '../services/authService';
+import QRCode from 'react-qr-code';
+import { downloadSvgAsPng } from '../utils/qrUtils';
+import { svgToPngDataUrl, generateReservationPdf } from '../utils/pdfUtils';
 
 function ConfirmarReserva() {
     const location = useLocation();
@@ -125,6 +128,55 @@ function ConfirmarReserva() {
                         <p style={styles.codigoHint}>
                             Guarda este código para consultar tu reserva
                         </p>
+                    </div>
+
+                    {/* QR : muestra y descarga */}
+                    <div style={{marginTop:16, marginBottom:24, textAlign:'center'}}>
+                        <div style={{display: 'inline-block', padding:12, background: '#fff', borderRadius:8}}>
+                            <div id={'qr-container-${reservaCreada.id}'} style={{background: 'white',padding:8}}>
+                                <QRCode
+                                    id={'qr-svg-${reservaCreada.id}'}
+                                    value={reservaCreada.codigoReserva}
+                                    size={150}
+                                    level="M"
+                                />
+                            </div>
+                        </div>
+                    
+
+                        <div style={{marginTop:12, display: 'flex', gap:8, justifyContent:'center'}}>
+                            <button
+                                style={styles.primaryButton}
+                                onClick={async () => {
+                                    try {
+                                        const svgEl=document.querySelector('#qr-container-${reservaCreada.id} svg');
+                                        await downloadSvgAsPng(svgEl, `${reservaCreada.codigoReserva}.png`);
+                                        alert('QR descargado correctamente');
+                                    } catch (err) {
+                                        console.error('Error al descargar el QR:', err);
+                                        alert('Error al descargar el QR');
+                                    }
+                                }}
+                            >
+                                Descargar QR
+                            </button>
+                            <button
+                                style={styles.primaryButton}
+                                onClick={async () => {
+                                    try {
+                                        const svgEl = document.querySelector(`#qr-container-${reservaCreada.id} svg`);
+                                        if (!svgEl) { alert('QR no encontrado'); return; }
+                                        const qrDataUrl = await svgToPngDataUrl(svgEl, 4);
+                                        await generateReservationPdf(reservaCreada, funcion, qrDataUrl);
+                                    } catch (err) {
+                                        console.error('Error generando PDF:', err);
+                                        alert('No se pudo generar el PDF');
+                                    }
+                                }}
+                            >
+                                Descargar PDF (Ticket)
+                            </button>
+                        </div>
                     </div>
 
                     <div style={styles.detallesCard}>
@@ -260,7 +312,7 @@ function ConfirmarReserva() {
                         <div style={styles.precioSection}>
                             <div style={styles.precioDetalle}>
                                 <span>Precio por asiento:</span>
-                                <span>${funcion.precio.toFixed(2)}</span>
+                                <span>${funcion.precio.toFixed(2)}</span> 
                             </div>
                             <div style={styles.precioDetalle}>
                                 <span>Cantidad de asientos:</span>

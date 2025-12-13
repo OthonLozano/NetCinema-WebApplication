@@ -2,6 +2,9 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { reservaService } from '../services/reservaService';
 import { authService } from '../services/authService';
+import QRCode from 'react-qr-code';
+import { downloadSvgAsPng } from '../utils/qrUtils';
+import { svgToPngDataUrl, generateReservationPdf } from '../utils/pdfUtils';
 
 function MisReservas() {
     const navigate = useNavigate();
@@ -259,6 +262,51 @@ function MisReservas() {
                                 <p style={styles.codigoLabel}>Código de Reserva</p>
                                 <h3 style={styles.codigoValor}>{reservaSeleccionada.codigoReserva}</h3>
                             </div>
+
+                            {/* QR en modal (si esta confirmada) */}
+                            {reservaSeleccionada.estado === 'CONFIRMADA' && (
+                                <div style={{ textAlign: 'center', marginBottom: 20 }}>
+                                    <div style={{ display: 'inline-block', padding: 12, background: '#fff', borderRadius: 8 }}>
+                                        <div id={`qr-container-${reservaSeleccionada.id}`} style={{ background: 'white', padding: 8 }}>
+                                            <QRCode value={reservaSeleccionada.codigoReserva} size={140} />
+                                        </div>
+                                    </div>
+
+                                    <div style={{ marginTop: 12, display: 'flex', gap: 8, justifyContent: 'center' }}>
+                                        <button
+                                            onClick={async () => {
+                                                try {
+                                                    const svgEl = document.querySelector(`#qr-container-${reservaSeleccionada.id} svg`);
+                                                    await downloadSvgAsPng(svgEl, `${reservaSeleccionada.codigoReserva}.png`);
+                                                    alert('QR descargado');
+                                                } catch (err) {
+                                                    console.error(err);
+                                                    alert('Error al descargar QR');
+                                                }
+                                            }}
+                                            style={styles.newSearchButton}
+                                        >
+                                            Descargar QR
+                                        </button>
+                                        <button
+                                            onClick={async () => {
+                                                try {
+                                                    const svgEl = document.querySelector(`#qr-container-${reservaSeleccionada.id} svg`);
+                                                    if (!svgEl) { alert('QR no encontrado'); return; }
+                                                    const qrDataUrl = await svgToPngDataUrl(svgEl, 4);
+                                                    await generateReservationPdf(reservaSeleccionada, reservaSeleccionada.funcion, qrDataUrl);
+                                                } catch (err) {
+                                                    console.error(err);
+                                                    alert('Error al generar PDF');
+                                                }
+                                            }}
+                                            style={styles.newSearchButton}
+                                        >
+                                            Descargar PDF
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
 
                             {/* Estado */}
                             <div style={styles.detalleSection}>

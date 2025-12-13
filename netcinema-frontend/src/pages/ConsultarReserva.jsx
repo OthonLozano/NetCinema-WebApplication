@@ -1,5 +1,8 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import QRCode from 'react-qr-code';
+import {downloadSvgAsPng} from '../utils/qrUtils';
+import { svgToPngDataUrl, generateReservationPdf } from '../utils/pdfUtils';
 
 function ConsultarReserva() {
     const navigate = useNavigate();
@@ -105,6 +108,48 @@ function ConsultarReserva() {
                             <span style={getEstadoBadgeStyle(reserva.estado)}>
                 {reserva.estado}
               </span>
+                        </div>
+
+                        {/* QR y descargar*/}
+                        <div style={{ textAlign: 'center', marginBottom: 16 }}>
+                            <div style={{ display: 'inline-block', padding: 12, background: '#fff', borderRadius: 8 }}>
+                                <div id={`qr-container-${reserva.id}`} style={{ background: 'white', padding: 8 }}>
+                                    <QRCode value={reserva.codigoReserva} size={140} />
+                                </div>
+                            </div>
+                            <div style={{ marginTop: 8 }}>
+                                <button
+                                    onClick={async () => {
+                                        try {
+                                            const svgEl = document.querySelector(`#qr-container-${reserva.id} svg`);
+                                            await downloadSvgAsPng(svgEl, `${reserva.codigoReserva}.png`);
+                                            alert('QR descargado');
+                                        } catch (err) {
+                                            console.error(err);
+                                            alert('Error al descargar QR');
+                                        }
+                                    }}
+                                    style={styles.button}
+                                >
+                                    Descargar QR
+                                </button>
+                                <button
+                                    onClick={async () => {
+                                        try {
+                                            const svgEl = document.querySelector(`#qr-container-${reserva.id} svg`);
+                                            if (!svgEl) { alert('QR no encontrado'); return; }
+                                            const qrDataUrl = await svgToPngDataUrl(svgEl, 4);
+                                            await generateReservationPdf(reserva, reserva.funcion, qrDataUrl);
+                                        } catch (err) {
+                                            console.error(err);
+                                            alert('Error al generar PDF');
+                                        }
+                                    }}
+                                    style={styles.button}
+                                >
+                                    Descargar PDF
+                                </button>
+                            </div>
                         </div>
 
                         <div style={styles.infoSection}>
