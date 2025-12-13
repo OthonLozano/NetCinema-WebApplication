@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import QRCode from 'react-qr-code';
+import QRCode from 'react-qr-code'; //es para generar QR
+import { Html5Qrcode } from 'html5-qrcode'; //es para manejo de QR
 import {downloadSvgAsPng} from '../utils/qrUtils';
 import { svgToPngDataUrl, generateReservationPdf } from '../utils/pdfUtils';
 
@@ -10,18 +11,22 @@ function ConsultarReserva() {
     const [reserva, setReserva] = useState(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
+    const [showScanner, setShowScanner] = useState(false); // Nuevo estado para mostrar/ocultar el escáner
+    const [scannerLoading, setScannerLoading] = useState(false); // Nuevo estado para indicar carga del escáner
+    const scannerRef = useRef(null); // Referencia al contenedor del escáner
+    const html5QrCodeRef = useRef(null); // Referencia a la instancia de Html5Qrcode
 
-    const buscarReserva = async (e) => {
-        e.preventDefault();
+    const buscarReserva = async (codigo) => {
         setError('');
         setLoading(true);
 
         try {
-            const response = await fetch(`http://localhost:8080/api/reservas/codigo/${codigoReserva}`);
+            const response = await fetch(`http://localhost:8080/api/reservas/codigo/${codigo}`);
             const data = await response.json();
 
             if (data.success) {
                 setReserva(data.data);
+                setCodigoReserva(codigo);
             } else {
                 setError('Reserva no encontrada');
             }
@@ -30,6 +35,70 @@ function ConsultarReserva() {
             console.error(err);
         } finally {
             setLoading(false);
+        }
+    };
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        await buscarReserva(codigoReserva);
+    };
+
+    const startScanner = async () => {
+        setScannerLoading(true);
+        setError('');
+        setShowScanner(true);
+
+        try {
+            // Esperar a que el DOM se actualice
+            await new Promise(resolve => setTimeout(resolve, 100));
+
+            const html5QrCode = new Html5Qrcode("qr-reader");
+            html5QrCodeRef.current = html5QrCode;
+
+            const config = {
+                fps: 10,
+                qrbox: { width: 250, height: 250 },
+                aspectRatio: 1.0
+            };
+
+            await html5QrCode.start(
+                { facingMode: "environment" }, // Usar cámara trasera en móviles
+                config,
+                async (decodedText) => {
+                    // QR escaneado exitosamente
+                    console.log("QR escaneado:", decodedText);
+                    
+                    // Detener el scanner
+                    await stopScanner();
+                    
+                    // Buscar la reserva
+                    await buscarReserva(decodedText);
+                },
+                (errorMessage) => {
+                    // Error al escanear (esto es normal, ocurre continuamente)
+                    // No hacer nada aquí para evitar spam en consola
+                }
+            );
+
+            setScannerLoading(false);
+        } catch (err) {
+            console.error("Error al iniciar scanner:", err);
+            setError('Error al acceder a la cámara. Verifica los permisos.');
+            setShowScanner(false);
+            setScannerLoading(false);
+        }
+    };
+
+    const stopScanner = async () => {
+        try {
+            if (html5QrCodeRef.current && html5QrCodeRef.current.isScanning) {
+                await html5QrCodeRef.current.stop();
+                await html5QrCodeRef.current.clear();
+            }
+            html5QrCodeRef.current = null;
+            setShowScanner(false);
+        } catch (err) {
+            console.error("Error al detener scanner:", err);
         }
     };
 
@@ -70,35 +139,81 @@ function ConsultarReserva() {
                     </div>
                     <h1 style={styles.title}>Consultar Reserva</h1>
                     <p style={styles.subtitle}>
-                        Ingresa tu código de reserva para ver los detalles
+                        Ingresa tu código de reserva o escanea el código QR
                     </p>
 
-                    <form onSubmit={buscarReserva} style={styles.form}>
-                        <div style={styles.inputGroup}>
-                            <input
-                                type="text"
-                                value={codigoReserva}
-                                onChange={(e) => setCodigoReserva(e.target.value.toUpperCase())}
-                                style={styles.input}
-                                placeholder="Ej: RES-ABC12345"
-                                required
-                            />
-                        </div>
+                    {!showScanner ? (
+                        <>
+                            <form onSubmit={handleSubmit} style={styles.form}>
+                                <div style={styles.inputGroup}>
+                                    <input
+                                        type="text"
+                                        value={codigoReserva}
+                                        onChange={(e) => setCodigoReserva(e.target.value.toUpperCase())}
+                                        style={styles.input}
+                                        placeholder="Ej: RES-ABC12345"
+                                        required
+                                    />
+                                </div>
 
-                        {error && (
-                            <div style={styles.errorContainer}>
-                                <p style={styles.error}>{error}</p>
+                                {error && (
+                                    <div style={styles.errorContainer}>
+                                        <p style={styles.error}>{error}</p>
+                                    </div>
+                                )}
+
+                                <button
+                                    type="submit"
+                                    style={styles.button}
+                                    disabled={loading}
+                                >
+                                    {loading ? 'Buscando...' : 'Buscar Reserva'}
+                                </button>
+                            </form>
+
+                            <div style={styles.divider}>
+                                <span style={styles.dividerText}>O</span>
                             </div>
-                        )}
 
-                        <button
-                            type="submit"
-                            style={styles.button}
-                            disabled={loading}
-                        >
-                            {loading ? 'Buscando...' : 'Buscar Reserva'}
-                        </button>
-                    </form>
+                            <button
+                                onClick={startScanner}
+                                style={styles.scanButton}
+                                disabled={scannerLoading}
+                            >
+                                <span style={styles.scanIcon}>📷</span>
+                                {scannerLoading ? 'Iniciando cámara...' : 'Escanear Código QR'}
+                            </button>
+                        </>
+                    ) : (
+                        <div style={styles.scannerContainer}>
+                            <div style={styles.scannerHeader}>
+                                <h3 style={styles.scannerTitle}>Escanea tu código QR</h3>
+                                <p style={styles.scannerSubtitle}>
+                                    Coloca el código QR dentro del recuadro
+                                </p>
+                            </div>
+                            
+                            <div style={styles.qrReaderWrapper}>
+                                <div id="qr-reader" ref={scannerRef} style={styles.qrReader}></div>
+                            </div>
+
+                            {scannerLoading && (
+                                <div style={styles.scannerLoadingContainer}>
+                                    <div style={styles.spinner}></div>
+                                    <p style={styles.scannerLoadingText}>
+                                        Iniciando cámara...
+                                    </p>
+                                </div>
+                            )}
+
+                            <button
+                                onClick={stopScanner}
+                                style={styles.cancelScanButton}
+                            >
+                                Cancelar
+                            </button>
+                        </div>
+                    )}
                 </div>
 
                 {reserva && (
@@ -106,18 +221,18 @@ function ConsultarReserva() {
                         <div style={styles.resultHeader}>
                             <h2 style={styles.resultTitle}>Detalles de la Reserva</h2>
                             <span style={getEstadoBadgeStyle(reserva.estado)}>
-                {reserva.estado}
-              </span>
+                                {reserva.estado}
+                            </span>
                         </div>
 
-                        {/* QR y descargar*/}
-                        <div style={{ textAlign: 'center', marginBottom: 16 }}>
-                            <div style={{ display: 'inline-block', padding: 12, background: '#fff', borderRadius: 8 }}>
+                        {/* QR y descargar */}
+                        <div style={{ textAlign: 'center', marginBottom: 24 }}>
+                            <div style={{ display: 'inline-block', padding: 12, background: '#fff', borderRadius: 8, boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>
                                 <div id={`qr-container-${reserva.id}`} style={{ background: 'white', padding: 8 }}>
                                     <QRCode value={reserva.codigoReserva} size={140} />
                                 </div>
                             </div>
-                            <div style={{ marginTop: 8 }}>
+                            <div style={{ marginTop: 16, display: 'flex', gap: 12, justifyContent: 'center' }}>
                                 <button
                                     onClick={async () => {
                                         try {
@@ -129,9 +244,9 @@ function ConsultarReserva() {
                                             alert('Error al descargar QR');
                                         }
                                     }}
-                                    style={styles.button}
+                                    style={styles.downloadButton}
                                 >
-                                    Descargar QR
+                                    📥 Descargar QR
                                 </button>
                                 <button
                                     onClick={async () => {
@@ -145,9 +260,9 @@ function ConsultarReserva() {
                                             alert('Error al generar PDF');
                                         }
                                     }}
-                                    style={styles.button}
+                                    style={styles.pdfButton}
                                 >
-                                    Descargar PDF
+                                    📄 Descargar PDF
                                 </button>
                             </div>
                         </div>
@@ -176,15 +291,15 @@ function ConsultarReserva() {
                             <div style={styles.infoItem}>
                                 <span style={styles.label}>Sala:</span>
                                 <span style={styles.value}>
-                  {reserva.funcion.sala.nombre} ({reserva.funcion.sala.tipo})
-                </span>
+                                    {reserva.funcion.sala.nombre} ({reserva.funcion.sala.tipo})
+                                </span>
                             </div>
 
                             <div style={styles.infoItem}>
                                 <span style={styles.label}>Fecha y Hora:</span>
                                 <span style={styles.value}>
-                  {new Date(reserva.funcion.fechaHora).toLocaleString('es-ES')}
-                </span>
+                                    {new Date(reserva.funcion.fechaHora).toLocaleString('es-ES')}
+                                </span>
                             </div>
 
                             <div style={styles.infoItem}>
@@ -208,6 +323,7 @@ function ConsultarReserva() {
                                 onClick={() => {
                                     setReserva(null);
                                     setCodigoReserva('');
+                                    setError('');
                                 }}
                                 style={styles.newSearchButton}
                             >
@@ -217,6 +333,15 @@ function ConsultarReserva() {
                     </div>
                 )}
             </div>
+
+            <style>
+                {`
+                    @keyframes spin {
+                        0% { transform: rotate(0deg); }
+                        100% { transform: rotate(360deg); }
+                    }
+                `}
+            </style>
         </div>
     );
 }
@@ -242,6 +367,7 @@ const styles = {
         borderRadius: '8px',
         cursor: 'pointer',
         fontWeight: '600',
+        transition: 'all 0.3s ease',
     },
     headerTitle: {
         fontSize: '24px',
@@ -305,6 +431,7 @@ const styles = {
         letterSpacing: '1px',
         outline: 'none',
         boxSizing: 'border-box',
+        transition: 'all 0.3s ease',
     },
     button: {
         padding: '16px',
@@ -313,6 +440,99 @@ const styles = {
         border: 'none',
         borderRadius: '10px',
         fontSize: '16px',
+        fontWeight: '600',
+        cursor: 'pointer',
+        transition: 'all 0.3s ease',
+    },
+    divider: {
+        display: 'flex',
+        alignItems: 'center',
+        margin: '24px 0',
+        gap: '16px',
+    },
+    dividerText: {
+        padding: '0 16px',
+        color: '#6c757d',
+        fontWeight: '600',
+        fontSize: '14px',
+    },
+    scanButton: {
+        width: '100%',
+        padding: '16px',
+        backgroundColor: '#28a745',
+        color: 'white',
+        border: 'none',
+        borderRadius: '10px',
+        fontSize: '16px',
+        fontWeight: '600',
+        cursor: 'pointer',
+        transition: 'all 0.3s ease',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: '12px',
+    },
+    scanIcon: {
+        fontSize: '24px',
+    },
+    scannerContainer: {
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '20px',
+    },
+    scannerHeader: {
+        textAlign: 'center',
+    },
+    scannerTitle: {
+        fontSize: '20px',
+        fontWeight: 'bold',
+        color: '#2c3e50',
+        marginBottom: '8px',
+    },
+    scannerSubtitle: {
+        fontSize: '14px',
+        color: '#6c757d',
+        margin: 0,
+    },
+    qrReaderWrapper: {
+        position: 'relative',
+        width: '100%',
+        maxWidth: '500px',
+        margin: '0 auto',
+        borderRadius: '12px',
+        overflow: 'hidden',
+        boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+    },
+    qrReader: {
+        width: '100%',
+    },
+    scannerLoadingContainer: {
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        gap: '12px',
+        padding: '20px',
+    },
+    spinner: {
+        width: '40px',
+        height: '40px',
+        border: '4px solid #e9ecef',
+        borderTop: '4px solid #28a745',
+        borderRadius: '50%',
+        animation: 'spin 1s linear infinite',
+    },
+    scannerLoadingText: {
+        color: '#6c757d',
+        fontSize: '14px',
+        margin: 0,
+    },
+    cancelScanButton: {
+        padding: '14px',
+        backgroundColor: '#dc3545',
+        color: 'white',
+        border: 'none',
+        borderRadius: '10px',
+        fontSize: '15px',
         fontWeight: '600',
         cursor: 'pointer',
         transition: 'all 0.3s ease',
@@ -351,6 +571,28 @@ const styles = {
         fontWeight: 'bold',
         color: '#2c3e50',
         margin: 0,
+    },
+    downloadButton: {
+        padding: '12px 24px',
+        backgroundColor: '#667eea',
+        color: 'white',
+        border: 'none',
+        borderRadius: '8px',
+        fontSize: '14px',
+        fontWeight: '600',
+        cursor: 'pointer',
+        transition: 'all 0.3s ease',
+    },
+    pdfButton: {
+        padding: '12px 24px',
+        backgroundColor: '#dc3545',
+        color: 'white',
+        border: 'none',
+        borderRadius: '8px',
+        fontSize: '14px',
+        fontWeight: '600',
+        cursor: 'pointer',
+        transition: 'all 0.3s ease',
     },
     infoSection: {
         display: 'flex',
@@ -396,17 +638,6 @@ const styles = {
         display: 'flex',
         gap: '12px',
     },
-    printButton: {
-        flex: 1,
-        padding: '14px',
-        backgroundColor: '#28a745',
-        color: 'white',
-        border: 'none',
-        borderRadius: '8px',
-        fontSize: '15px',
-        fontWeight: '600',
-        cursor: 'pointer',
-    },
     newSearchButton: {
         flex: 1,
         padding: '14px',
@@ -417,6 +648,7 @@ const styles = {
         fontSize: '15px',
         fontWeight: '600',
         cursor: 'pointer',
+        transition: 'all 0.3s ease',
     },
 };
 
